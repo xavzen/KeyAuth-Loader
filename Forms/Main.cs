@@ -1,7 +1,7 @@
 using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
-using Loader;
 
 namespace KeyAuth
 {
@@ -30,19 +30,29 @@ namespace KeyAuth
             hwid.Text = "<b>HWID:</b> " + Login.KeyAuthApp.user_data.hwid;
             createDate.Text = "<b>Creation date:</b> " + UnixTimeToDateTime(long.Parse(Login.KeyAuthApp.user_data.createdate));
             lastLogin.Text = "<b>Last login:</b> " + UnixTimeToDateTime(long.Parse(Login.KeyAuthApp.user_data.lastlogin));
-            subscriptionDaysLabel.Text = "<b>Expiry in Days:</b> " + Login.KeyAuthApp.expirydaysleft();
+            subscriptionDaysLabel.Text = "<b>Expiry in Days:</b> " + expirydaysleft();
             numUsers.Text = "<b>Number of users:</b> " + Login.KeyAuthApp.app_data.numUsers;
             numOnlineUsers.Text = "<b>Number of online users:</b> " + Login.KeyAuthApp.app_data.numOnlineUsers;
             numKeys.Text = "<b>Number of licenses:</b> " + Login.KeyAuthApp.app_data.numKeys;
             version.Text = "<b>Current version:</b> " + Login.KeyAuthApp.app_data.version;
             customerPanelLink.Text = "<b>Customer panel:</b> " + Login.KeyAuthApp.app_data.customerPanelLink;
 
-            var onlineUsers = Login.KeyAuthApp.fetchOnline();
-            foreach (var user in onlineUsers)
+            // var onlineUsers = Login.KeyAuthApp.fetchOnline();
+            // foreach (var user in onlineUsers)
+            // {
+                   //onlineUsersBox.Items.Add(user.credential);
+            // }
+            if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt"))
             {
-                //onlineUsersBox.Items.Add(user.credential);
+                string text = File.ReadAllText(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt");
+                if (text == "dark")
+                {
+                    themeCb.Checked = false;
+                    CSharpKeyAuth.Properties.Settings.Default.Theme = "Dark";
+                    DarkTheme();
+                    ChangeTheme();
+                }
             }
-
         }
 
         public static bool SubExist(string name, int len)
@@ -55,6 +65,14 @@ namespace KeyAuth
                 }
             }
             return false;
+        }
+
+        public string expirydaysleft()
+        {
+            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Local);
+            dtDateTime = dtDateTime.AddSeconds(long.Parse(Login.KeyAuthApp.user_data.subscriptions[0].expiry)).ToLocalTime();
+            TimeSpan difference = dtDateTime - DateTime.Now;
+            return Convert.ToString(difference.Days + " Days " + difference.Hours + " Hours Left");
         }
 
         public DateTime UnixTimeToDateTime(long unixtime)
@@ -87,12 +105,14 @@ namespace KeyAuth
         {
             if (themeCb.Checked)
             {
+                File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt", "light");
                 CSharpKeyAuth.Properties.Settings.Default.Theme = "Light";
                 LightTheme();
                 ChangeTheme();
             }
             else
             {
+                File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt", "dark");
                 CSharpKeyAuth.Properties.Settings.Default.Theme = "Dark";
                 DarkTheme();
                 ChangeTheme();
@@ -115,7 +135,7 @@ namespace KeyAuth
             numKeys.ForeColor = textcolor;
             version.ForeColor = textcolor;
             customerPanelLink.ForeColor = textcolor;
-            Main.ActiveForm.BackColor = backgroundcolor;
+            this.BackColor = backgroundcolor;
             topBar.FillColor = topbarcolor;
             siticoneLabel1.ForeColor = textcolor;
             topLabel.ForeColor = textcolor;
@@ -132,7 +152,7 @@ namespace KeyAuth
         // Close application
         private void siticoneControlBox1_Click_1(object sender, EventArgs e)
         {
-            Application.Exit();
+            Environment.Exit(0);
         }
 
         private void siticoneImageCheckBox1_CheckedChanged(object sender, EventArgs e)

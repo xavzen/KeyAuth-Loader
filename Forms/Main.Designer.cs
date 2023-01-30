@@ -17,6 +17,9 @@ namespace KeyAuth
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.siticoneDragControl1 = new Siticone.UI.WinForms.SiticoneDragControl(this.components);
             this.topBar = new Siticone.Desktop.UI.WinForms.SiticonePanel();
+            this.siticoneImageCheckBox1 = new Siticone.Desktop.UI.WinForms.SiticoneImageCheckBox();
+            this.siticoneCirclePictureBox1 = new Siticone.Desktop.UI.WinForms.SiticoneCirclePictureBox();
+            this.themeCb = new Siticone.Desktop.UI.WinForms.SiticoneImageCheckBox();
             this.topLabel = new System.Windows.Forms.Label();
             this.siticoneControlBox1 = new Siticone.Desktop.UI.WinForms.SiticoneControlBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -39,13 +42,10 @@ namespace KeyAuth
             this.appDetails = new Siticone.Desktop.UI.WinForms.SiticoneGroupBox();
             this.userGroup = new Siticone.Desktop.UI.WinForms.SiticoneGroupBox();
             this.siticoneElipse1 = new Siticone.Desktop.UI.WinForms.SiticoneElipse(this.components);
-            this.siticoneImageCheckBox1 = new Siticone.Desktop.UI.WinForms.SiticoneImageCheckBox();
-            this.siticoneCirclePictureBox1 = new Siticone.Desktop.UI.WinForms.SiticoneCirclePictureBox();
-            this.themeCb = new Siticone.Desktop.UI.WinForms.SiticoneImageCheckBox();
             this.topBar.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.siticoneCirclePictureBox1)).BeginInit();
             this.appDetails.SuspendLayout();
             this.userGroup.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.siticoneCirclePictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // siticoneDragControl1
@@ -68,6 +68,62 @@ namespace KeyAuth
             this.topBar.Size = new System.Drawing.Size(443, 31);
             this.topBar.TabIndex = 56;
             this.topBar.UseTransparentBackground = true;
+            // 
+            // siticoneImageCheckBox1
+            // 
+            this.siticoneImageCheckBox1.BackColor = System.Drawing.Color.Transparent;
+            this.siticoneImageCheckBox1.Checked = true;
+            this.siticoneImageCheckBox1.CheckedState.Image = global::CSharpKeyAuth.Properties.Resources.question_free_icon_font;
+            this.siticoneImageCheckBox1.CheckedState.Parent = this.siticoneImageCheckBox1;
+            this.siticoneImageCheckBox1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.siticoneImageCheckBox1.HoverState.Parent = this.siticoneImageCheckBox1;
+            this.siticoneImageCheckBox1.Image = global::CSharpKeyAuth.Properties.Resources.question_free_icon_font;
+            this.siticoneImageCheckBox1.ImageOffset = new System.Drawing.Point(0, 0);
+            this.siticoneImageCheckBox1.ImageRotate = 0F;
+            this.siticoneImageCheckBox1.Location = new System.Drawing.Point(342, 0);
+            this.siticoneImageCheckBox1.Name = "siticoneImageCheckBox1";
+            this.siticoneImageCheckBox1.PressedState.Image = global::CSharpKeyAuth.Properties.Resources.question_free_icon_font;
+            this.siticoneImageCheckBox1.PressedState.Parent = this.siticoneImageCheckBox1;
+            this.siticoneImageCheckBox1.ShadowDecoration.Parent = this.siticoneImageCheckBox1;
+            this.siticoneImageCheckBox1.Size = new System.Drawing.Size(34, 31);
+            this.siticoneImageCheckBox1.TabIndex = 55;
+            this.siticoneImageCheckBox1.UseTransparentBackground = true;
+            this.siticoneImageCheckBox1.CheckedChanged += new System.EventHandler(this.siticoneImageCheckBox1_CheckedChanged);
+            // 
+            // siticoneCirclePictureBox1
+            // 
+            this.siticoneCirclePictureBox1.FillColor = System.Drawing.Color.Transparent;
+            this.siticoneCirclePictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("siticoneCirclePictureBox1.Image")));
+            this.siticoneCirclePictureBox1.ImageRotate = 0F;
+            this.siticoneCirclePictureBox1.Location = new System.Drawing.Point(3, 3);
+            this.siticoneCirclePictureBox1.Name = "siticoneCirclePictureBox1";
+            this.siticoneCirclePictureBox1.ShadowDecoration.Mode = Siticone.Desktop.UI.WinForms.Enums.ShadowMode.Circle;
+            this.siticoneCirclePictureBox1.ShadowDecoration.Parent = this.siticoneCirclePictureBox1;
+            this.siticoneCirclePictureBox1.Size = new System.Drawing.Size(35, 25);
+            this.siticoneCirclePictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.siticoneCirclePictureBox1.TabIndex = 54;
+            this.siticoneCirclePictureBox1.TabStop = false;
+            this.siticoneCirclePictureBox1.UseTransparentBackground = true;
+            // 
+            // themeCb
+            // 
+            this.themeCb.BackColor = System.Drawing.Color.Transparent;
+            this.themeCb.Checked = true;
+            this.themeCb.CheckedState.Image = global::CSharpKeyAuth.Properties.Resources.bulb_dark;
+            this.themeCb.CheckedState.Parent = this.themeCb;
+            this.themeCb.Dock = System.Windows.Forms.DockStyle.Right;
+            this.themeCb.HoverState.Parent = this.themeCb;
+            this.themeCb.Image = global::CSharpKeyAuth.Properties.Resources.bulb_white;
+            this.themeCb.ImageOffset = new System.Drawing.Point(0, 0);
+            this.themeCb.ImageRotate = 0F;
+            this.themeCb.Location = new System.Drawing.Point(376, 0);
+            this.themeCb.Name = "themeCb";
+            this.themeCb.PressedState.Parent = this.themeCb;
+            this.themeCb.ShadowDecoration.Parent = this.themeCb;
+            this.themeCb.Size = new System.Drawing.Size(34, 31);
+            this.themeCb.TabIndex = 0;
+            this.themeCb.UseTransparentBackground = true;
+            this.themeCb.CheckedChanged += new System.EventHandler(this.themeCb_CheckedChanged);
             // 
             // topLabel
             // 
@@ -333,62 +389,6 @@ namespace KeyAuth
             this.siticoneElipse1.BorderRadius = 5;
             this.siticoneElipse1.TargetControl = this;
             // 
-            // siticoneImageCheckBox1
-            // 
-            this.siticoneImageCheckBox1.BackColor = System.Drawing.Color.Transparent;
-            this.siticoneImageCheckBox1.Checked = true;
-            this.siticoneImageCheckBox1.CheckedState.Image = global::CSharpKeyAuth.Properties.Resources.question_free_icon_font;
-            this.siticoneImageCheckBox1.CheckedState.Parent = this.siticoneImageCheckBox1;
-            this.siticoneImageCheckBox1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.siticoneImageCheckBox1.HoverState.Parent = this.siticoneImageCheckBox1;
-            this.siticoneImageCheckBox1.Image = global::CSharpKeyAuth.Properties.Resources.question_free_icon_font;
-            this.siticoneImageCheckBox1.ImageOffset = new System.Drawing.Point(0, 0);
-            this.siticoneImageCheckBox1.ImageRotate = 0F;
-            this.siticoneImageCheckBox1.Location = new System.Drawing.Point(342, 0);
-            this.siticoneImageCheckBox1.Name = "siticoneImageCheckBox1";
-            this.siticoneImageCheckBox1.PressedState.Image = global::CSharpKeyAuth.Properties.Resources.question_free_icon_font;
-            this.siticoneImageCheckBox1.PressedState.Parent = this.siticoneImageCheckBox1;
-            this.siticoneImageCheckBox1.ShadowDecoration.Parent = this.siticoneImageCheckBox1;
-            this.siticoneImageCheckBox1.Size = new System.Drawing.Size(34, 31);
-            this.siticoneImageCheckBox1.TabIndex = 55;
-            this.siticoneImageCheckBox1.UseTransparentBackground = true;
-            this.siticoneImageCheckBox1.CheckedChanged += new System.EventHandler(this.siticoneImageCheckBox1_CheckedChanged);
-            // 
-            // siticoneCirclePictureBox1
-            // 
-            this.siticoneCirclePictureBox1.FillColor = System.Drawing.Color.Transparent;
-            this.siticoneCirclePictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("siticoneCirclePictureBox1.Image")));
-            this.siticoneCirclePictureBox1.ImageRotate = 0F;
-            this.siticoneCirclePictureBox1.Location = new System.Drawing.Point(3, 3);
-            this.siticoneCirclePictureBox1.Name = "siticoneCirclePictureBox1";
-            this.siticoneCirclePictureBox1.ShadowDecoration.Mode = Siticone.Desktop.UI.WinForms.Enums.ShadowMode.Circle;
-            this.siticoneCirclePictureBox1.ShadowDecoration.Parent = this.siticoneCirclePictureBox1;
-            this.siticoneCirclePictureBox1.Size = new System.Drawing.Size(35, 25);
-            this.siticoneCirclePictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.siticoneCirclePictureBox1.TabIndex = 54;
-            this.siticoneCirclePictureBox1.TabStop = false;
-            this.siticoneCirclePictureBox1.UseTransparentBackground = true;
-            // 
-            // themeCb
-            // 
-            this.themeCb.BackColor = System.Drawing.Color.Transparent;
-            this.themeCb.Checked = true;
-            this.themeCb.CheckedState.Image = global::CSharpKeyAuth.Properties.Resources.bulb_dark;
-            this.themeCb.CheckedState.Parent = this.themeCb;
-            this.themeCb.Dock = System.Windows.Forms.DockStyle.Right;
-            this.themeCb.HoverState.Parent = this.themeCb;
-            this.themeCb.Image = global::CSharpKeyAuth.Properties.Resources.bulb_white;
-            this.themeCb.ImageOffset = new System.Drawing.Point(0, 0);
-            this.themeCb.ImageRotate = 0F;
-            this.themeCb.Location = new System.Drawing.Point(376, 0);
-            this.themeCb.Name = "themeCb";
-            this.themeCb.PressedState.Parent = this.themeCb;
-            this.themeCb.ShadowDecoration.Parent = this.themeCb;
-            this.themeCb.Size = new System.Drawing.Size(34, 31);
-            this.themeCb.TabIndex = 0;
-            this.themeCb.UseTransparentBackground = true;
-            this.themeCb.CheckedChanged += new System.EventHandler(this.themeCb_CheckedChanged);
-            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -402,6 +402,7 @@ namespace KeyAuth
             this.Controls.Add(this.label1);
             this.Controls.Add(this.siticoneLabel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Loader";
@@ -409,11 +410,11 @@ namespace KeyAuth
             this.Load += new System.EventHandler(this.Main_Load);
             this.topBar.ResumeLayout(false);
             this.topBar.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.siticoneCirclePictureBox1)).EndInit();
             this.appDetails.ResumeLayout(false);
             this.appDetails.PerformLayout();
             this.userGroup.ResumeLayout(false);
             this.userGroup.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.siticoneCirclePictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

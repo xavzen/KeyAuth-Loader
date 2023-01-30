@@ -8,8 +8,11 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Diagnostics;
 using System.Security.Principal;
-using System.Threading;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+using System.Windows;
+using System.Threading;
 
 namespace KeyAuth
 {
@@ -20,13 +23,12 @@ namespace KeyAuth
         /// Set up your application credentials in order to use keyauth
         /// </summary>
         /// <param name="name">Application Name</param>
-        /// <param name="ownerid">Your OwnerID, can be found in your account settings.</param>
+        /// <param name="ownerid">Your OwnerID, found in your account settings.</param>
         /// <param name="secret">Application Secret</param>
         /// <param name="version">Application Version, if version doesnt match it will open the download link you set up in your application settings and close the app, if empty the app will close</param>
         public api(string name, string ownerid, string secret, string version)
         {
-
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(ownerid) || string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(version))
+            if (ownerid.Length != 10 || secret.Length != 64)
             {
                 error("Application not setup correctly. Please watch video link found in Program.cs");
                 Environment.Exit(0);
@@ -123,24 +125,23 @@ namespace KeyAuth
             public string downloadLink { get; set; }
         }
         #endregion
-        private string sessionid, enckey;
+        private static string sessionid, enckey;
         bool initzalized;
         /// <summary>
         /// Initializes the connection with keyauth in order to use any of the functions
         /// </summary>
         public void init()
         {
-            enckey = encryption.sha256(encryption.iv_key());
-            var init_iv = encryption.sha256(encryption.iv_key());
+            string sentKey = encryption.iv_key();
+            enckey = sentKey + "-" + secret;
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("init")),
-                ["ver"] = encryption.encrypt(version, secret, init_iv),
+                ["type"] = "init",
+                ["ver"] = version,
                 ["hash"] = checksum(Process.GetCurrentProcess().MainModule.FileName),
-                ["enckey"] = encryption.encrypt(enckey, secret, init_iv),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["enckey"] = sentKey,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
@@ -151,10 +152,7 @@ namespace KeyAuth
                 Environment.Exit(0);
             }
 
-            response = encryption.decrypt(response, secret, init_iv);
-
             var json = response_decoder.string_to_generic<response_structure>(response);
-
             load_response_struct(json);
             if (json.success)
             {
@@ -173,35 +171,31 @@ namespace KeyAuth
         /// </summary>
         /// <param name="username">Username</param>
         /// <param name="pass">Password</param>
-        /// <param name="key">License</param>
+        /// <param name="key">License key</param>
         public void register(string username, string pass, string key)
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
             string hwid = WindowsIdentity.GetCurrent().User.Value;
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("register")),
-                ["username"] = encryption.encrypt(username, enckey, init_iv),
-                ["pass"] = encryption.encrypt(pass, enckey, init_iv),
-                ["key"] = encryption.encrypt(key, enckey, init_iv),
-                ["hwid"] = encryption.encrypt(hwid, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "register",
+                ["username"] = username,
+                ["pass"] = pass,
+                ["key"] = key,
+                ["hwid"] = hwid,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
             if (json.success)
@@ -216,29 +210,25 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
             string hwid = WindowsIdentity.GetCurrent().User.Value;
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("login")),
-                ["username"] = encryption.encrypt(username, enckey, init_iv),
-                ["pass"] = encryption.encrypt(pass, enckey, init_iv),
-                ["hwid"] = encryption.encrypt(hwid, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "login",
+                ["username"] = username,
+                ["pass"] = pass,
+                ["hwid"] = hwid,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
             if (json.success)
@@ -249,13 +239,15 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
             string hwid = WindowsIdentity.GetCurrent().User.Value;
 
             string datastore, datastore2, outputten;
+
+        start:
 
             HttpListener listener = new HttpListener();
 
@@ -276,6 +268,14 @@ namespace KeyAuth
             responsepp.AddHeader("Location", "your kernel ;)");
             responsepp.AddHeader("Retry-After", "never lmao");
             responsepp.Headers.Add("Server", "\r\n\r\n");
+
+            if (request.HttpMethod == "OPTIONS")
+            {
+                responsepp.StatusCode = (int)HttpStatusCode.OK;
+                Thread.Sleep(1); // without this, the response doesn't return to the website, and the web buttons can't be shown
+                listener.Stop();
+                goto start;
+            }
 
             listener.AuthenticationSchemes = AuthenticationSchemes.Negotiate;
             listener.UnsafeConnectionNtlmAuthentication = true;
@@ -302,7 +302,7 @@ namespace KeyAuth
                 ["ownerid"] = ownerid
             };
 
-            var response = req_unenc(values_to_upload);
+            var response = req(values_to_upload);
 
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
@@ -327,11 +327,9 @@ namespace KeyAuth
             byte[] buffer = Encoding.UTF8.GetBytes("Whats up?");
 
             responsepp.ContentLength64 = buffer.Length;
-            System.IO.Stream output = responsepp.OutputStream;
+            Stream output = responsepp.OutputStream;
             output.Write(buffer, 0, buffer.Length);
-
-            Thread.Sleep(1250);
-
+            Thread.Sleep(1); // without this, the response doesn't return to the website, and the web buttons can't be shown
             listener.Stop();
 
             if (!success)
@@ -348,7 +346,7 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
@@ -393,28 +391,22 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            string hwid = WindowsIdentity.GetCurrent().User.Value;
-
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("upgrade")),
-                ["username"] = encryption.encrypt(username, enckey, init_iv),
-                ["key"] = encryption.encrypt(key, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "upgrade",
+                ["username"] = username,
+                ["key"] = key,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             json.success = false;
             load_response_struct(json);
@@ -428,28 +420,23 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
             string hwid = WindowsIdentity.GetCurrent().User.Value;
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("license")),
-                ["key"] = encryption.encrypt(key, enckey, init_iv),
-                ["hwid"] = encryption.encrypt(hwid, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "license",
+                ["key"] = key,
+                ["hwid"] = hwid,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
-
-            response = encryption.decrypt(response, enckey, init_iv);
 
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
@@ -457,29 +444,26 @@ namespace KeyAuth
                 load_user_data(json.info);
         }
         /// <summary>
-        /// checks if the current session is validated or not
+        /// Checks if the current session is validated or not
         /// </summary>
         public void check()
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
-            var init_iv = encryption.sha256(encryption.iv_key());
 
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("check")),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "check",
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
         }
@@ -492,26 +476,22 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("setvar")),
-                ["var"] = encryption.encrypt(var, enckey, init_iv),
-                ["data"] = encryption.encrypt(data, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "setvar",
+                ["var"] = var,
+                ["data"] = data,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
         }
@@ -522,28 +502,23 @@ namespace KeyAuth
         /// <returns>The content of the user variable</returns>
         public string getvar(string var)
         {
-
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("getvar")),
-                ["var"] = encryption.encrypt(var, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "getvar",
+                ["var"] = var,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
             if (json.success)
@@ -553,28 +528,25 @@ namespace KeyAuth
         /// <summary>
         /// Bans the current logged in user
         /// </summary>
-        public void ban()
+        public void ban(string reason = null)
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("ban")),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "ban",
+                ["reason"] = reason,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
         }
@@ -587,27 +559,21 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            string hwid = WindowsIdentity.GetCurrent().User.Value;
-
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("var")),
-                ["varid"] = encryption.encrypt(varid, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "var",
+                ["varid"] = varid,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
             if (json.success)
@@ -622,24 +588,20 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("fetchOnline")),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "fetchOnline",
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
 
@@ -648,46 +610,34 @@ namespace KeyAuth
             return null;
         }
         /// <summary>
-        /// Gets the last 20 sent messages of that channel
+        /// Gets the last 50 sent messages of that channel
         /// </summary>
         /// <param name="channelname">The channel name</param>
-        /// <returns>the last 20 sent messages of that channel</returns>
+        /// <returns>the last 50 sent messages of that channel</returns>
         public List<msg> chatget(string channelname)
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("chatget")),
-                ["channel"] = encryption.encrypt(channelname, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "chatget",
+                ["channel"] = channelname,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
-
-            response = encryption.decrypt(response, enckey, init_iv);
 
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
             if (json.success)
             {
-                if (json.messages[0].message == "not_found")
-                {
-                    return null;
-                }
-                else
-                {
-                    return json.messages;
-                }
+                return json.messages;
             }
             return null;
         }
@@ -701,26 +651,22 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("chatsend")),
-                ["message"] = encryption.encrypt(msg, enckey, init_iv),
-                ["channel"] = encryption.encrypt(channelname, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "chatsend",
+                ["message"] = msg,
+                ["channel"] = channelname,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
             if (json.success)
@@ -735,26 +681,22 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
             string hwid = WindowsIdentity.GetCurrent().User.Value;
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("checkblacklist")),
-                ["hwid"] = encryption.encrypt(hwid, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "checkblacklist",
+                ["hwid"] = hwid,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
 
-            response = encryption.decrypt(response, enckey, init_iv);
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
             if (json.success)
@@ -773,29 +715,24 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
                 return null;
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
-
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("webhook")),
-                ["webid"] = encryption.encrypt(webid, enckey, init_iv),
-                ["params"] = encryption.encrypt(param, enckey, init_iv),
-                ["body"] = encryption.encrypt(body, enckey, init_iv),
-                ["conttype"] = encryption.encrypt(conttype, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "webhook",
+                ["webid"] = webid,
+                ["params"] = param,
+                ["body"] = body,
+                ["conttype"] = conttype,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
-
-            response = encryption.decrypt(response, enckey, init_iv);
 
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
@@ -812,26 +749,21 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first. File is empty since no request could be made.");
+                error("You must run the function KeyAuthApp.init(); first. File is empty since no request could be made.");
                 Environment.Exit(0);
             }
-
-            var init_iv = encryption.sha256(encryption.iv_key());
 
             var values_to_upload = new NameValueCollection
             {
 
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("file")),
-                ["fileid"] = encryption.encrypt(fileid, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "file",
+                ["fileid"] = fileid,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             var response = req(values_to_upload);
-
-            response = encryption.decrypt(response, enckey, init_iv);
 
             var json = response_decoder.string_to_generic<response_structure>(response);
             load_response_struct(json);
@@ -847,20 +779,18 @@ namespace KeyAuth
         {
             if (!initzalized)
             {
-                error("Please initzalize first");
+                error("You must run the function KeyAuthApp.init(); first");
                 Environment.Exit(0);
             }
 
-            var init_iv = encryption.sha256(encryption.iv_key());
             var values_to_upload = new NameValueCollection
             {
-                ["type"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes("log")),
-                ["pcuser"] = encryption.encrypt(Environment.UserName, enckey, init_iv),
-                ["message"] = encryption.encrypt(message, enckey, init_iv),
-                ["sessionid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(sessionid)),
-                ["name"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(name)),
-                ["ownerid"] = encryption.byte_arr_to_str(Encoding.Default.GetBytes(ownerid)),
-                ["init_iv"] = init_iv
+                ["type"] = "log",
+                ["pcuser"] = Environment.UserName,
+                ["message"] = message,
+                ["sessionid"] = sessionid,
+                ["name"] = name,
+                ["ownerid"] = ownerid
             };
 
             req(values_to_upload);
@@ -895,7 +825,13 @@ namespace KeyAuth
             {
                 using (WebClient client = new WebClient())
                 {
-                    var raw_response = client.UploadValues("https://keyauth.win/api/1.0/", post_data);
+                    client.Proxy = null;
+
+                    ServicePointManager.ServerCertificateValidationCallback += assertSSL;
+
+                    var raw_response = client.UploadValues("https://keyauth.win/api/1.2/", post_data);
+
+                    sigCheck(Encoding.Default.GetString(raw_response), client.ResponseHeaders["signature"], post_data.Get(0));
 
                     return Encoding.Default.GetString(raw_response);
                 }
@@ -917,33 +853,31 @@ namespace KeyAuth
             }
         }
 
-        /// <summary>
-        /// Created for Web Login
-        /// </summary>
-        private static string req_unenc(NameValueCollection post_data)
+        private static bool assertSSL(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (!certificate.Issuer.Contains("Cloudflare Inc") || sslPolicyErrors != SslPolicyErrors.None)
+            {
+                error("SSL assertion fail, make sure you're not debugging Network. Disable internet firewall on router if possible. & echo: & echo If not, ask the developer of the program to use custom domains to fix this.");
+                return false;
+            }
+            return true;
+        }
+
+        private static void sigCheck(string resp, string signature, string type)
         {
             try
             {
-                using (WebClient client = new WebClient())
+                string clientComputed = encryption.HashHMAC((type == "init") ? enckey.Substring(17, 64) : enckey, resp);
+                if (clientComputed != signature)
                 {
-                    var raw_response = client.UploadValues("https://keyauth.win/api/1.1/", post_data);
-
-                    return Encoding.Default.GetString(raw_response);
+                    error("Signaure check fail. Try to run the program again, your session may have expired.");
+                    Environment.Exit(0);
                 }
             }
-            catch (WebException webex)
+            catch
             {
-                var response = (HttpWebResponse)webex.Response;
-                switch (response.StatusCode)
-                {
-                    case (HttpStatusCode)429: // client hit our rate limit
-                        Thread.Sleep(1000);
-                        return req(post_data);
-                    default: // site won't resolve. you should use keyauth.uk domain since it's not blocked by any ISPs
-                        error("Connection failure. Please try again, or contact us for help.");
-                        Environment.Exit(0);
-                        return "";
-                }
+                error("Signaure check fail. Try to run the program again, your session may have expired.");
+                Environment.Exit(0);
             }
         }
 
@@ -1000,22 +934,6 @@ namespace KeyAuth
         }
         #endregion
 
-
-        // Expiry Days Left
-        public string expirydaysleft()
-        {
-            if (!initzalized)
-            {
-                error("Please initzalize first");
-                Environment.Exit(0);
-            }
-
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Local);
-            dtDateTime = dtDateTime.AddSeconds(long.Parse(user_data.subscriptions[0].expiry)).ToLocalTime();
-            TimeSpan difference = dtDateTime - DateTime.Now;
-            return Convert.ToString(difference.Days + " Days " + difference.Hours + " Hours Left");
-        }
-
         #region response_struct
         public response_class response = new response_class();
 
@@ -1037,6 +955,14 @@ namespace KeyAuth
 
     public static class encryption
     {
+        public static string HashHMAC(string enckey, string resp)
+        {
+            byte[] key = Encoding.ASCII.GetBytes(enckey);
+            byte[] message = Encoding.ASCII.GetBytes(resp);
+            var hash = new HMACSHA256(key);
+            return byte_arr_to_str(hash.ComputeHash(message));
+        }
+
         public static string byte_arr_to_str(byte[] ba)
         {
             StringBuilder hex = new StringBuilder(ba.Length * 2);
@@ -1045,7 +971,6 @@ namespace KeyAuth
             return hex.ToString();
         }
 
-        // BROKEN
         public static byte[] str_to_byte_arr(string hex)
         {
             try
@@ -1058,92 +983,14 @@ namespace KeyAuth
             }
             catch
             {
-                Console.WriteLine("\n\n  The session has ended, open program again.");
-                Thread.Sleep(3500);
+                api.error("The session has ended, open program again.");
                 Environment.Exit(0);
                 return null;
             }
         }
 
-        public static string encrypt_string(string plain_text, byte[] key, byte[] iv)
-        {
-            Aes encryptor = Aes.Create();
-
-            encryptor.Mode = CipherMode.CBC;
-            encryptor.Key = key;
-            encryptor.IV = iv;
-
-            using (MemoryStream mem_stream = new MemoryStream())
-            {
-                using (ICryptoTransform aes_encryptor = encryptor.CreateEncryptor())
-                {
-                    using (CryptoStream crypt_stream = new CryptoStream(mem_stream, aes_encryptor, CryptoStreamMode.Write))
-                    {
-                        byte[] p_bytes = Encoding.Default.GetBytes(plain_text);
-
-                        crypt_stream.Write(p_bytes, 0, p_bytes.Length);
-
-                        crypt_stream.FlushFinalBlock();
-
-                        byte[] c_bytes = mem_stream.ToArray();
-
-                        return byte_arr_to_str(c_bytes);
-                    }
-                }
-            }
-        }
-
-        public static string decrypt_string(string cipher_text, byte[] key, byte[] iv)
-        {
-            Aes encryptor = Aes.Create();
-
-            encryptor.Mode = CipherMode.CBC;
-            encryptor.Key = key;
-            encryptor.IV = iv;
-
-            using (MemoryStream mem_stream = new MemoryStream())
-            {
-                using (ICryptoTransform aes_decryptor = encryptor.CreateDecryptor())
-                {
-                    using (CryptoStream crypt_stream = new CryptoStream(mem_stream, aes_decryptor, CryptoStreamMode.Write))
-                    {
-                        byte[] c_bytes = str_to_byte_arr(cipher_text);
-
-                        crypt_stream.Write(c_bytes, 0, c_bytes.Length);
-
-                        crypt_stream.FlushFinalBlock();
-
-                        byte[] p_bytes = mem_stream.ToArray();
-
-                        return Encoding.Default.GetString(p_bytes, 0, p_bytes.Length);
-                    }
-                }
-            }
-        }
-
         public static string iv_key() =>
-            Guid.NewGuid().ToString().Substring(0, Guid.NewGuid().ToString().IndexOf("-", StringComparison.Ordinal));
-
-        public static string sha256(string r) =>
-            byte_arr_to_str(new SHA256Managed().ComputeHash(Encoding.Default.GetBytes(r)));
-
-        public static string encrypt(string message, string enc_key, string iv)
-        {
-            byte[] _key = Encoding.Default.GetBytes(sha256(enc_key).Substring(0, 32));
-
-            byte[] _iv = Encoding.Default.GetBytes(sha256(iv).Substring(0, 16));
-
-            return encrypt_string(message, _key, _iv);
-        }
-
-        public static string decrypt(string message, string enc_key, string iv)
-        {
-            byte[] _key = Encoding.Default.GetBytes(sha256(enc_key).Substring(0, 32));
-
-            byte[] _iv = Encoding.Default.GetBytes(sha256(iv).Substring(0, 16));
-
-            return decrypt_string(message, _key, _iv);
-        }
+            Guid.NewGuid().ToString().Substring(0, 16);
     }
 
     public class json_wrapper
