@@ -31,13 +31,13 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(About));
             this.topBar = new Siticone.Desktop.UI.WinForms.SiticonePanel();
+            this.siticoneControlBox1 = new Siticone.Desktop.UI.WinForms.SiticoneControlBox();
+            this.siticoneCirclePictureBox1 = new Siticone.Desktop.UI.WinForms.SiticoneCirclePictureBox();
             this.topLabel = new System.Windows.Forms.Label();
             this.siticoneButton2 = new Siticone.Desktop.UI.WinForms.SiticoneButton();
             this.label1 = new System.Windows.Forms.Label();
             this.siticoneButton1 = new Siticone.Desktop.UI.WinForms.SiticoneButton();
             this.siticoneButton3 = new Siticone.Desktop.UI.WinForms.SiticoneButton();
-            this.siticoneControlBox1 = new Siticone.Desktop.UI.WinForms.SiticoneControlBox();
-            this.siticoneCirclePictureBox1 = new Siticone.Desktop.UI.WinForms.SiticoneCirclePictureBox();
             this.siticoneDragControl1 = new Siticone.Desktop.UI.WinForms.SiticoneDragControl(this.components);
             this.siticoneBorderlessForm1 = new Siticone.Desktop.UI.WinForms.SiticoneBorderlessForm(this.components);
             this.topBar.SuspendLayout();
@@ -58,6 +58,37 @@
             this.topBar.Size = new System.Drawing.Size(401, 31);
             this.topBar.TabIndex = 57;
             this.topBar.UseTransparentBackground = true;
+            // 
+            // siticoneControlBox1
+            // 
+            this.siticoneControlBox1.ControlBoxStyle = Siticone.Desktop.UI.WinForms.Enums.ControlBoxStyle.Custom;
+            this.siticoneControlBox1.CustomIconSize = 14F;
+            this.siticoneControlBox1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.siticoneControlBox1.FillColor = System.Drawing.Color.Transparent;
+            this.siticoneControlBox1.HoverState.Parent = this.siticoneControlBox1;
+            this.siticoneControlBox1.IconColor = System.Drawing.Color.Red;
+            this.siticoneControlBox1.Location = new System.Drawing.Point(368, 0);
+            this.siticoneControlBox1.Name = "siticoneControlBox1";
+            this.siticoneControlBox1.ShadowDecoration.Parent = this.siticoneControlBox1;
+            this.siticoneControlBox1.Size = new System.Drawing.Size(33, 31);
+            this.siticoneControlBox1.TabIndex = 57;
+            this.siticoneControlBox1.UseTransparentBackground = true;
+            this.siticoneControlBox1.Click += new System.EventHandler(this.siticoneControlBox1_Click);
+            // 
+            // siticoneCirclePictureBox1
+            // 
+            this.siticoneCirclePictureBox1.FillColor = System.Drawing.Color.Transparent;
+            this.siticoneCirclePictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("siticoneCirclePictureBox1.Image")));
+            this.siticoneCirclePictureBox1.ImageRotate = 0F;
+            this.siticoneCirclePictureBox1.Location = new System.Drawing.Point(3, 3);
+            this.siticoneCirclePictureBox1.Name = "siticoneCirclePictureBox1";
+            this.siticoneCirclePictureBox1.ShadowDecoration.Mode = Siticone.Desktop.UI.WinForms.Enums.ShadowMode.Circle;
+            this.siticoneCirclePictureBox1.ShadowDecoration.Parent = this.siticoneCirclePictureBox1;
+            this.siticoneCirclePictureBox1.Size = new System.Drawing.Size(35, 25);
+            this.siticoneCirclePictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.siticoneCirclePictureBox1.TabIndex = 54;
+            this.siticoneCirclePictureBox1.TabStop = false;
+            this.siticoneCirclePictureBox1.UseTransparentBackground = true;
             // 
             // topLabel
             // 
@@ -107,7 +138,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(227, 36);
             this.label1.TabIndex = 55;
-            this.label1.Text = "Created by xav#3433\r\nUsing KeyAuth as the auth provider.\r\n";
+            this.label1.Text = "Created by 93#0001\r\nUsing KeyAuth as the auth provider.\r\n";
             this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // siticoneButton1
@@ -162,37 +193,6 @@
             this.siticoneButton3.UseTransparentBackground = true;
             this.siticoneButton3.Click += new System.EventHandler(this.siticoneButton3_Click);
             // 
-            // siticoneControlBox1
-            // 
-            this.siticoneControlBox1.ControlBoxStyle = Siticone.Desktop.UI.WinForms.Enums.ControlBoxStyle.Custom;
-            this.siticoneControlBox1.CustomIconSize = 14F;
-            this.siticoneControlBox1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.siticoneControlBox1.FillColor = System.Drawing.Color.Transparent;
-            this.siticoneControlBox1.HoverState.Parent = this.siticoneControlBox1;
-            this.siticoneControlBox1.IconColor = System.Drawing.Color.Red;
-            this.siticoneControlBox1.Location = new System.Drawing.Point(368, 0);
-            this.siticoneControlBox1.Name = "siticoneControlBox1";
-            this.siticoneControlBox1.ShadowDecoration.Parent = this.siticoneControlBox1;
-            this.siticoneControlBox1.Size = new System.Drawing.Size(33, 31);
-            this.siticoneControlBox1.TabIndex = 57;
-            this.siticoneControlBox1.UseTransparentBackground = true;
-            this.siticoneControlBox1.Click += new System.EventHandler(this.siticoneControlBox1_Click);
-            // 
-            // siticoneCirclePictureBox1
-            // 
-            this.siticoneCirclePictureBox1.FillColor = System.Drawing.Color.Transparent;
-            this.siticoneCirclePictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("siticoneCirclePictureBox1.Image")));
-            this.siticoneCirclePictureBox1.ImageRotate = 0F;
-            this.siticoneCirclePictureBox1.Location = new System.Drawing.Point(3, 3);
-            this.siticoneCirclePictureBox1.Name = "siticoneCirclePictureBox1";
-            this.siticoneCirclePictureBox1.ShadowDecoration.Mode = Siticone.Desktop.UI.WinForms.Enums.ShadowMode.Circle;
-            this.siticoneCirclePictureBox1.ShadowDecoration.Parent = this.siticoneCirclePictureBox1;
-            this.siticoneCirclePictureBox1.Size = new System.Drawing.Size(35, 25);
-            this.siticoneCirclePictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.siticoneCirclePictureBox1.TabIndex = 54;
-            this.siticoneCirclePictureBox1.TabStop = false;
-            this.siticoneCirclePictureBox1.UseTransparentBackground = true;
-            // 
             // siticoneDragControl1
             // 
             this.siticoneDragControl1.TargetControl = this.topBar;
@@ -213,8 +213,10 @@
             this.Controls.Add(this.siticoneButton2);
             this.Controls.Add(this.topBar);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "About";
             this.Text = "About";
+            this.Load += new System.EventHandler(this.About_Load);
             this.topBar.ResumeLayout(false);
             this.topBar.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.siticoneCirclePictureBox1)).EndInit();

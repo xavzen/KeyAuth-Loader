@@ -1,16 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Management;
+using System.IO;
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace KeyAuth
@@ -21,6 +14,7 @@ namespace KeyAuth
         public Color textboxcolor;
         public Color topbarcolor;
         public Color textcolor;
+        public Color placeholdercolor;
         public Bitmap logo;
 
         /*
@@ -29,27 +23,28 @@ namespace KeyAuth
         * 
         */
 
-            /*
-            Optional Functions:
+        /*
+        Optional Functions:
 
-            KeyAuthApp.webhook("lfvbBrbFhIr", "?sellerkey=CUqDqlCIgl&type=resethash");
-            // send secure request to webhook which is impossible to crack into. the base link set on the website is https://keyauth.com/api/seller/, which nobody except you can see, so the final request is https://keyauth.com/api/seller/?sellerkey=CUqDqlCIgl&type=resethash
+        KeyAuthApp.webhook("lfvbBrbFhIr", "?sellerkey=CUqDqlCIgl&type=resethash");
+        // send secure request to webhook which is impossible to crack into. the base link set on the website is https://keyauth.com/api/seller/, which nobody except you can see, so the final request is https://keyauth.com/api/seller/?sellerkey=CUqDqlCIgl&type=resethash
 
-            // byte[] result = KeyAuthApp.download("902901"); // downloads application file
-            // File.WriteAllBytes("C:\\Users\\mak\\Downloads\\KeyAuth-CSHARP-Example-main (5)\\KeyAuth-CSHARP-Example-main\\ConsoleExample\\bin\\Debug\\countkeys.txt", result);
+        // byte[] result = KeyAuthApp.download("902901"); // downloads application file
+        // File.WriteAllBytes("C:\\Users\\mak\\Downloads\\KeyAuth-CSHARP-Example-main (5)\\KeyAuth-CSHARP-Example-main\\ConsoleExample\\bin\\Debug\\countkeys.txt", result);
 
-            MessageBox.Show(KeyAuthApp.var("123456")); // retrieve application variable
-            */
+        MessageBox.Show(KeyAuthApp.var("123456")); // retrieve application variable
+        */
 
-            // KeyAuthApp.register("username", "password", "key");
-            //KeyAuthApp.login("username", "password"); 
+        // KeyAuthApp.register("username", "password", "key");
+        //KeyAuthApp.login("username", "password"); 
 
-                public static api KeyAuthApp = new api(
-                    name: "PLACE APP NAME HERE",
-                    ownerid: "PLACE OWNERID HERE",
-                    secret: "PLACE SECRET HERE",
-                    version: "PLACE VERSION HERE"
-                    );
+
+        public static api KeyAuthApp = new api(
+            name: "",
+            ownerid: "",
+            secret: "",
+            version: "1.0"
+        );
 
         public Login()
         {
@@ -116,8 +111,19 @@ namespace KeyAuth
             // {
             //     MessageBox.Show("user is not blacklisted");
             // }
-            KeyAuthApp.check();
+            // KeyAuthApp.check();
             //siticoneLabel1.Text = $"Current Session Validation Status: {KeyAuthApp.response.success}";
+            if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt"))
+            {
+                string text = File.ReadAllText(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt");
+                if(text == "dark")
+                {
+                    themeCb.Checked = false;
+                    CSharpKeyAuth.Properties.Settings.Default.Theme = "Dark";
+                    DarkTheme();
+                    ChangeTheme();
+                }
+            }
         }
 
         // Color settings for dark theme
@@ -127,6 +133,7 @@ namespace KeyAuth
             textboxcolor = Color.FromArgb(60, 63, 69);
             topbarcolor = Color.FromArgb(32, 34, 37);
             textcolor = Color.FromArgb(255, 255, 255);
+            placeholdercolor = Color.FromArgb(204, 220, 206);
             logo = CSharpKeyAuth.Properties.Resources.logo_1_dark;
         }
 
@@ -137,6 +144,7 @@ namespace KeyAuth
             textboxcolor = Color.FromArgb(192, 192, 192);
             topbarcolor = Color.FromArgb(255, 255, 255);
             textcolor = Color.FromArgb(0, 0, 0);
+            placeholdercolor = Color.FromArgb(0, 0, 0);
             logo = CSharpKeyAuth.Properties.Resources.logo_1_white;
         }
 
@@ -204,12 +212,14 @@ namespace KeyAuth
         {
             if (themeCb.Checked)
             {
+                File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt", "light");
                 CSharpKeyAuth.Properties.Settings.Default.Theme = "Light";
                 LightTheme();
                 ChangeTheme();
             }
             else
             {
+                File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\keyauth-panel.txt", "dark");
                 CSharpKeyAuth.Properties.Settings.Default.Theme = "Dark";
                 DarkTheme();
                 ChangeTheme();
@@ -222,17 +232,17 @@ namespace KeyAuth
             // Username format
             username.FillColor = textboxcolor;
             username.ForeColor = textcolor;
-            username.PlaceholderForeColor = textcolor;
+            username.PlaceholderForeColor = placeholdercolor;
 
             // Password format
             password.FillColor = textboxcolor;
             password.ForeColor = textcolor;
-            password.PlaceholderForeColor = textcolor;
+            password.PlaceholderForeColor = placeholdercolor;
 
             // License format
             key.FillColor = textboxcolor;
             key.ForeColor = textcolor;
-            key.PlaceholderForeColor = textcolor;
+            key.PlaceholderForeColor = placeholdercolor;
 
             // Form format
             topBar.FillColor = topbarcolor;
@@ -244,7 +254,7 @@ namespace KeyAuth
         // Close application
         private void siticoneControlBox1_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            Environment.Exit(0);
         }
     }
 }

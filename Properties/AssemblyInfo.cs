@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Loader")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("KeyAuth Loader Winform Example")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Nelson Cybersecurity LLC")]
 [assembly: AssemblyProduct("Loader")]
-[assembly: AssemblyCopyright("Copyright KeyAuth.cc 2022")]
+[assembly: AssemblyCopyright("Copyright © KeyAuth.cc")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
